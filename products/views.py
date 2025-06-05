@@ -3,6 +3,9 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from .models import Product, ProductImage, Category
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.viewsets import ReadOnlyModelViewSet
+from .serializers import ProductSerializer
+from rest_framework import viewsets, permissions, generics
 
 class ProductCreateView(APIView):
     parser_classes = (MultiPartParser, FormParser)
@@ -12,7 +15,6 @@ class ProductCreateView(APIView):
         data = request.data
         user = request.user
 
-        # Cria produto
         product = Product.objects.create(
             user=user,
             name=data.get('name'),
@@ -32,12 +34,32 @@ class ProductCreateView(APIView):
             meta_keywords=data.get('meta_keywords'),
         )
 
-        # Múltiplas categorias (espera lista de IDs)
         category_ids = request.data.getlist('categories')
         product.categories.set(Category.objects.filter(id__in=category_ids))
 
-        # Imagens
         for img in request.FILES.getlist('images'):
             ProductImage.objects.create(product=product, image=img)
 
         return Response({'message': 'Produto criado com sucesso'})
+
+class ProductViewSet(ReadOnlyModelViewSet):
+    permission_classes = [IsAuthenticated]
+
+
+    queryset = Product.objects.filter(is_available=True)
+    serializer_class = ProductSerializer
+
+
+class OwnerProductViewSet(viewsets.ModelViewSet):
+    serializer_class = ProductSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Product.objects.filter(user=self.request.user)
+    
+    
+class ProductDetailAPIView(generics.RetrieveAPIView):
+    serializer_class = ProductSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = Product.objects.all()
+    lookup_field = 'id'
