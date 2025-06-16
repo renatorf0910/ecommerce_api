@@ -2,9 +2,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from .models import Product, ProductImage, Category
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.viewsets import ReadOnlyModelViewSet
-from .serializers import ProductSerializer
+from .serializers import ProductSerializer, ProductImageSerializer
 from rest_framework import viewsets, permissions, generics
 
 class ProductCreateView(APIView):
@@ -43,7 +43,7 @@ class ProductCreateView(APIView):
         return Response({'message': 'Produto criado com sucesso'})
 
 class ProductViewSet(ReadOnlyModelViewSet):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
 
     queryset = Product.objects.filter(is_available=True)
@@ -62,4 +62,11 @@ class ProductDetailAPIView(generics.RetrieveAPIView):
     serializer_class = ProductSerializer
     permission_classes = [permissions.IsAuthenticated]
     queryset = Product.objects.all()
+    lookup_field = 'id'
+
+
+class ProductImageAPIView(generics.RetrieveAPIView):
+    serializer_class = ProductImageSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = ProductImage.objects.all()
     lookup_field = 'id'
