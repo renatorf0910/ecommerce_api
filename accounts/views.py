@@ -46,5 +46,4 @@ class UserProfileView(APIView):
         return Response({
             "username": user.username,
             "email": user.email,
-            # adicione mais campos se quiser
         })
