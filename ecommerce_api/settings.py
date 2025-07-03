@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'chat',
     'products',
     'core',
+    'cart',
 
     'rest_framework',
     'corsheaders',

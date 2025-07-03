@@ -1,7 +1,6 @@
 from django.db import models
 from django.utils.text import slugify
-from django.contrib.postgres.fields import JSONField  # Ou models.JSONField para Django 3.1+
-import datetime
+from django.contrib.postgres.fields import JSONField
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
