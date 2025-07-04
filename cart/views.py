@@ -8,11 +8,6 @@ from django.shortcuts import get_object_or_404
 class CartViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
-    def list(self, request):
-        cart, _ = Cart.objects.get_or_create(user=request.user)
-        serializer = CartSerializer(cart)
-        return Response(serializer.data)
-
     def create(self, request):
         cart, _ = Cart.objects.get_or_create(user=request.user)
         product_id = request.data.get("product_id")
@@ -49,3 +44,12 @@ class CartViewSet(viewsets.ViewSet):
         item = get_object_or_404(CartItem, cart=cart, pk=pk)
         item.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class CartListViewSet(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request):
+        cart, _ = Cart.objects.get_or_create(user=request.user)
+        serializer = CartSerializer(cart)
+        return Response(serializer.data)
