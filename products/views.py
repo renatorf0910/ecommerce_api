@@ -1,10 +1,10 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
-from .models import Product, ProductImage, Category
+from .models import Favorite, Product, ProductImage, Category
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.viewsets import ReadOnlyModelViewSet
-from .serializers import ProductSerializer, ProductImageSerializer
+from .serializers import FavoriteSerializer, ProductSerializer, ProductImageSerializer
 from rest_framework import viewsets, permissions, generics
 
 class ProductCreateView(APIView):
@@ -70,3 +70,29 @@ class ProductImageAPIView(generics.RetrieveAPIView):
     permission_classes = [permissions.IsAuthenticated]
     queryset = ProductImage.objects.all()
     lookup_field = 'id'
+
+
+class FavoriteViewSet(viewsets.ViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def list(self, request):
+        favorites = Favorite.objects.filter(user=request.user)
+        serializer = FavoriteSerializer(favorites, many=True)
+        return Response(serializer.data)
+
+    def create(self, request):
+        product_id = request.data.get("product")
+        if not product_id:
+            return Response({"error": "product ID required"}, status=400)
+        favorite, created = Favorite.objects.get_or_create(user=request.user, product_id=product_id)
+        if not created:
+            return Response({"message": "Product already favorited."}, status=200)
+        return Response(FavoriteSerializer(favorite).data, status=201)
+
+    def destroy(self, request, pk=None):
+        try:
+            favorite = Favorite.objects.get(user=request.user, product_id=pk)
+            favorite.delete()
+            return Response(status=204)
+        except Favorite.DoesNotExist:
+            return Response(status=404)
